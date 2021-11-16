@@ -17,7 +17,7 @@ to go
   ask turtles [ flock ]
   ;; the following line is used to make the turtles
   ;; animate more smoothly.
-  repeat 5 [ ask turtles [ fd 0.2 ] display ]
+  ;; repeat 5 [ ask turtles [ fd 0.2 ] display ]
   ;; for greater efficiency, at the expense of smooth
   ;; animation, substitute the following line instead:
   ;;   ask turtles [ fd 1 ]
@@ -32,6 +32,9 @@ to flock  ;; turtle procedure
         [ separate ]
         [ align
           cohere ] ]
+  ;; change color based on heading
+  let test heading
+  set color [heading * 139 / 360]
 end
 
 to find-flockmates  ;; turtle procedure
@@ -176,7 +179,7 @@ population
 population
 1.0
 1000.0
-300.0
+630.0
 1.0
 1
 NIL
@@ -191,7 +194,7 @@ max-align-turn
 max-align-turn
 0.0
 20.0
-5.0
+12.25
 0.25
 1
 degrees
@@ -206,7 +209,7 @@ max-cohere-turn
 max-cohere-turn
 0.0
 20.0
-3.0
+0.0
 0.25
 1
 degrees
@@ -221,7 +224,7 @@ max-separate-turn
 max-separate-turn
 0.0
 20.0
-1.5
+0.0
 0.25
 1
 degrees
@@ -236,7 +239,7 @@ vision
 vision
 0.0
 10.0
-5.0
+9.0
 0.5
 1
 patches
@@ -251,7 +254,7 @@ minimum-separation
 minimum-separation
 0.0
 5.0
-1.0
+0.0
 0.25
 1
 patches
