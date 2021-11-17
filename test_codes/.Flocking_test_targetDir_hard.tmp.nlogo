@@ -54,7 +54,7 @@ to find-nearest-neighbor ;; turtle procedure
 end
 
 to choose-leaders
-  ask one-of turtles [
+  ask one-of turtles in-radius 3] [
     set is-leader? true
     set color pink
     set c_target 1 ;; the leader has 100% certainty.
