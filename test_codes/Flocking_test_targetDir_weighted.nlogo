@@ -1,6 +1,12 @@
+;; Template of code used from Flocking algorithm in Netlogo.com, with the following copyright:
+; Copyright 1998 Uri Wilensky.
+; See Info tab for full copyright and license.
+
 turtles-own [
   flockmates         ;; agentset of nearby turtles
   nearest-neighbor   ;; closest one of our flockmates
+  d_target           ;; target distance
+  c_target           ;; certainty of target distance
 ]
 
 to setup
@@ -9,7 +15,8 @@ to setup
     [ set color yellow - 2 + random 7  ;; random shades look nice
       set size 1.5  ;; easier to see
       setxy random-xcor random-ycor
-      set flockmates no-turtles ]
+      set flockmates no-turtles
+      set d_target target-direction]
   reset-ticks
 end
 
@@ -17,7 +24,7 @@ to go
   ask turtles [ flock ]
   ;; the following line is used to make the turtles
   ;; animate more smoothly.
-  ;; repeat 5 [ ask turtles [ fd 0.2 ] display ]
+  repeat 5 [ ask turtles [ fd 0.2 ] display ]
   ;; for greater efficiency, at the expense of smooth
   ;; animation, substitute the following line instead:
   ;;   ask turtles [ fd 1 ]
@@ -31,10 +38,8 @@ to flock  ;; turtle procedure
       ifelse distance nearest-neighbor < minimum-separation
         [ separate ]
         [ align
-          cohere ] ]
-  ;; change color based on heading
-  let test heading
-  set color (heading * 139 / 360)
+          cohere
+          target ] ]
 end
 
 to find-flockmates  ;; turtle procedure
@@ -85,6 +90,19 @@ to-report average-heading-towards-flockmates  ;; turtle procedure
     [ report atan x-component y-component ]
 end
 
+;;; TARGET - adjust orientation based on perceived target global direction
+
+;; slightly turn towards the desired target direction
+to target
+  turn-towards d_target certainty-turn
+end
+
+;; define maximum target direction turn based on the certainty it has on that direction
+;; max certainty means certainty-turn = max-target-turn
+to-report certainty-turn
+  report global-certainty * max-target-turn
+end
+
 ;;; HELPER PROCEDURES
 
 to turn-towards [new-heading max-turn]  ;; turtle procedure
@@ -104,10 +122,6 @@ to turn-at-most [turn max-turn]  ;; turtle procedure
         [ lt max-turn ] ]
     [ rt turn ]
 end
-
-
-; Copyright 1998 Uri Wilensky.
-; See Info tab for full copyright and license.
 @#$#@#$#@
 GRAPHICS-WINDOW
 250
@@ -179,7 +193,7 @@ population
 population
 1.0
 1000.0
-630.0
+300.0
 1.0
 1
 NIL
@@ -194,7 +208,7 @@ max-align-turn
 max-align-turn
 0.0
 20.0
-12.25
+5.0
 0.25
 1
 degrees
@@ -209,7 +223,7 @@ max-cohere-turn
 max-cohere-turn
 0.0
 20.0
-0.0
+5.0
 0.25
 1
 degrees
@@ -224,7 +238,7 @@ max-separate-turn
 max-separate-turn
 0.0
 20.0
-0.0
+1.5
 0.25
 1
 degrees
@@ -239,7 +253,7 @@ vision
 vision
 0.0
 10.0
-9.0
+3.5
 0.5
 1
 patches
@@ -254,10 +268,51 @@ minimum-separation
 minimum-separation
 0.0
 5.0
-0.0
+1.0
 0.25
 1
 patches
+HORIZONTAL
+
+SLIDER
+9
+324
+236
+357
+max-target-turn
+max-target-turn
+0
+10
+3.0
+0.1
+1
+degrees
+HORIZONTAL
+
+INPUTBOX
+35
+366
+190
+426
+target-direction
+0.0
+1
+0
+Number
+
+SLIDER
+26
+435
+198
+468
+global-certainty
+global-certainty
+0
+1
+0.05
+0.05
+1
+NIL
 HORIZONTAL
 
 @#$#@#$#@
