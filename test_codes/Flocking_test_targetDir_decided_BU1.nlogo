@@ -7,20 +7,10 @@ extensions [array]
 turtles-own [
   flockmates         ;; agentset of nearby turtles
   nearest-neighbor   ;; closest one of our flockmates
-
-  ;; Modified from original
-  stub               ;; Agent's stubbornness value
-  rel                ;; Agent's reliability
-  shy                ;; Agent's shyness
-
   d_target           ;; target distance
   c_target           ;; certainty of target distance
   rumors             ;; data structure with the previously heard rumors.
-  ;; currently, "rumors" is a list of tuple list with the target direction and certainty
-  speakers           ;; array with ID numbers for the last k agents that were spoken to. Used for ignoring recent speakers
-
-
-
+  ;; currently, "rumors" is an array of tuples with the target direction and
 ]
 
 to setup
@@ -42,13 +32,8 @@ to setup
     [ set color yellow - 2 + random 7  ;; random shades look nice
       set size 1.5  ;; easier to see
       setxy random-xcor random-ycor
-
-      set stub 0;
-      set rel 1;
-      set shy 0;
-
       set flockmates no-turtles
-      ;set d_target target-direction
+      ;;set d_target target-direction
       set rumors global_rumors
     ]
   reset-ticks
@@ -58,24 +43,22 @@ to go
   ask turtles [ flock ]
   ;; the following line is used to make the turtles
   ;; animate more smoothly.
-  ;; repeat 5 [ ask turtles [ fd 0.2 ] display ]
+  repeat 5 [ ask turtles [ fd 0.2 ] display ]
   ;; for greater efficiency, at the expense of smooth
   ;; animation, substitute the following line instead:
   ;;   ask turtles [ fd 1 ]
-  ask turtles [color-direction]
   tick
 end
 
 to flock  ;; turtle procedure
   find-flockmates
-  ifelse any? flockmates
+  if any? flockmates
     [ find-nearest-neighbor
       ifelse distance nearest-neighbor < minimum-separation
         [ separate ]
         [ align
           cohere
           target ] ]
-  [ target ] ;; target if even no flockmates
 end
 
 to find-flockmates  ;; turtle procedure
@@ -156,15 +139,7 @@ to-report certainty-turn
   report c_target * max-target-turn
 end
 
-;; Change turtle color to match its heading and brigthness to match is certainty
-to color-direction
-  let c_new (hsb heading 100 (c_target * 100) );; Saturation picked 100 constant
-  set color c_new
-end
-
-;; Helper procedures - S. Gollob
-
-;;; HELPER PROCEDURES - U. Wilenski (1998)
+;;; HELPER PROCEDURES
 
 to turn-towards [new-heading max-turn]  ;; turtle procedure
   turn-at-most (subtract-headings new-heading heading) max-turn
@@ -177,17 +152,11 @@ end
 ;; turn right by "turn" degrees (or left if "turn" is negative),
 ;; but never turn more than "max-turn" degrees
 to turn-at-most [turn max-turn]  ;; turtle procedure
-
-  ;; Added from original (-SG)
-  let n_turn ((1 - stub) * turn)
-  let n_max ((1 - stub) * max-turn)
-  ;; End addition (save for variable name changes below
-
-  ifelse abs n_turn > n_max
-    [ ifelse n_turn > 0
-        [ rt n_max ]
-        [ lt n_max ] ]
-    [ rt n_turn ]
+  ifelse abs turn > max-turn
+    [ ifelse turn > 0
+        [ rt max-turn ]
+        [ lt max-turn ] ]
+    [ rt turn ]
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -260,7 +229,7 @@ population
 population
 1.0
 1000.0
-938.0
+63.0
 1.0
 1
 NIL
@@ -275,7 +244,7 @@ max-align-turn
 max-align-turn
 0.0
 20.0
-2.75
+5.0
 0.25
 1
 degrees
@@ -290,7 +259,7 @@ max-cohere-turn
 max-cohere-turn
 0.0
 20.0
-0.0
+5.0
 0.25
 1
 degrees
@@ -305,7 +274,7 @@ max-separate-turn
 max-separate-turn
 0.0
 20.0
-0.0
+1.5
 0.25
 1
 degrees
