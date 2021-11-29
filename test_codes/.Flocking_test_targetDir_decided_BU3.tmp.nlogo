@@ -18,7 +18,7 @@ turtles-own [
   rumors             ;; data structure with the previously heard rumors.
   ;; currently, "rumors" is a list of tuple list with the target direction and certainty
   speakers           ;; array with ID numbers for the last k agents that were spoken to. Used for ignoring recent speakers
-  speaker_idx        ;; Next avi
+  speaker_idx        ;; Next available index of speaker.
 
   is-leader?         ;; True if Agent is a leader, false otherwise.
 
@@ -100,7 +100,7 @@ to add-rumor
   let nearest-neigh-speaker-idx [speaker_idx] of nearest-neighbor
   let nearest-neigh-speakers    [speakers] of nearest-neighbor
 
-  if not [is-leader?] of nearest-neighbor and not [is-leader?] of myself [
+  if not [is-leader?] of nearest-neighbor and not [is-leader?] of myself a[
     ;; Add rumor to current agents rumor array.
     set rumors lput (list nearest-neigh-dir nearest-neigh-cert) rumors
 

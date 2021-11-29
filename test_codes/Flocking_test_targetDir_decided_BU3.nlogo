@@ -100,7 +100,7 @@ to add-rumor
   let nearest-neigh-speaker-idx [speaker_idx] of nearest-neighbor
   let nearest-neigh-speakers    [speakers] of nearest-neighbor
 
-  if not [is-leader?] of nearest-neighbor and not [is-leader?] of myself [
+  if not [is-leader?] of nearest-neighbor and not [is-leader?] of myself and not member? ([who] of nearest-neighbor) speakers [
     ;; Add rumor to current agents rumor array.
     set rumors lput (list nearest-neigh-dir nearest-neigh-cert) rumors
 
