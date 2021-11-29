@@ -18,7 +18,7 @@ turtles-own [
   rumors             ;; data structure with the previously heard rumors.
   ;; currently, "rumors" is a list of tuple list with the target direction and certainty
   speakers           ;; array with ID numbers for the last k agents that were spoken to. Used for ignoring recent speakers
-  speaker_idx        ;; Next available index of speaker.
+  speaker_idx        ;; Next avi
 
   is-leader?         ;; True if Agent is a leader, false otherwise.
 
