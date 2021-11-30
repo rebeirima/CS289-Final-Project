@@ -75,6 +75,9 @@ to go
   ;; animation, substitute the following line instead:
   ask turtles [ fd 1 ]
   ask turtles [color-direction]
+
+;  update-metrics
+
   tick
 end
 
@@ -86,7 +89,9 @@ to flock  ;; turtle procedure
       ;; Attempt communication with nearest neighbor.
 
       ;; ## ADD BLOCK TO CHECK FOR SHYNESS
-      add-rumor
+      if shyness_talk [
+         add-rumor
+      ]
 
       ;; Implement flocking
       ifelse distance nearest-neighbor < minimum-separation
@@ -116,6 +121,10 @@ to choose-leaders
     set color red
   ]
 end
+
+;to update-metrics
+;  set global_dir mean [heading] of turtles
+;end
 
 ;;; SEPARATE
 
@@ -186,7 +195,7 @@ to color-direction
   set color c_new
 end
 
-;; COMMUNICATE - exchange information with neighbors about the target direction
+;;; COMMUNICATE - exchange information with neighbors about the target direction
 
 to add-rumor
   ;; Add rumor to current agents rumor array.
@@ -228,6 +237,29 @@ to add-rumor
     ask nearest-neighbor [show speakers]
 
   ]
+end
+
+;;;Reliability Helper Function
+to-report reliability_error
+  ;; each agent has a reliability value [0,1]
+  ;; error is stochastically chosen based on agent's reliability
+  ;;1 rel corresponds to an error range of 0 degrees (probability of 1 for 0 error)
+  ;;0 rel corresponds to an error range of 180 degrees
+  ;;returns error_degree, the degree of error to be added to the communicated target_direction
+  let error_range (180 * (1 - rel))
+  let error_degree random error_range ;;error degree is the a
+  report int error_degree ;;STILL DO: need to make sure error_degree + direction is [0,360] degrees when using function
+end
+
+
+to-report shyness_talk
+  ;; each agent has a shyness value of [0,1]
+  ;; 1 shyness corresponds to talking to no one
+  ;; 0 shyness corresponds to talking to everyone, everytime
+  ;; returns a bool to see if agent will talk to neighbor
+  let shy_prob random-float 1
+  if shy > shy_prob [ report false ]
+  if shy <= shy_prob [ report true ]
 end
 
 
