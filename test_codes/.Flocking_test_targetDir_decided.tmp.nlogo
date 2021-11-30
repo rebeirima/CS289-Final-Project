@@ -217,12 +217,10 @@ to add-rumor
     ;; Listen to neighbor if I'm not leader and they have a non-zero certainty
     if (not [is-leader?] of self) and (([c_target] of nearest-neighbor) > 0) [
       ;; Add rumor to current agents rumor array.
-;      set rumors replace-item (speaker_idx mod 5) rumors (list nearest-neigh-dir nearest-neigh-cert)
-
+      ;  set rumors replace-item (speaker_idx mod 5) rumors (list nearest-neigh-dir nearest-neigh-cert)
       let reliability 0
       ask nearest-neighbor [set reliability reliability_error]
-
-      insert-rumor (nearest-neigh-dir + 10) nearest-neigh-cert
+      insert-rumor (nearest-neigh-dir * reliability) nearest-neigh-cert
       ;; Add neighbor to speaker list.
       set speakers replace-item (speaker_idx mod 5) speakers ([who] of nearest-neighbor)
       set speaker_idx (speaker_idx + 1)
@@ -230,8 +228,7 @@ to add-rumor
 
     ;; Give neighbor info if they are not a leader and I have non-zero certainty
     if (not [is-leader?] of nearest-neighbor) and (c_target > 0) [
-;      ask nearest-neighbor [set rumors replace-item (speaker_idx mod 5) rumors (list my-dir my-cert)]
-      ask nearest-neighbor [insert-rumor (my-dir + 10) my-cert]
+      ask nearest-neighbor [insert-rumor (my-dir * reliability_error) my-cert]
       ask nearest-neighbor [set speakers replace-item (speaker_idx mod 5) speakers (my-id)]
       ask nearest-neighbor [set speaker_idx (speaker_idx + 1)]
     ]
