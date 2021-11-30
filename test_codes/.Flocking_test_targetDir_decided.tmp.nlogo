@@ -28,6 +28,7 @@ turtles-own [
 to setup
   clear-all
 
+
   ask patches [set pcolor white]
   ;; create a randomly varying rumor array to simulate the calculation of a new target
 ;  let global_rumors ( list
@@ -40,8 +41,6 @@ to setup
 ;    )
 ;  show global_rumors ;; Instead do their heading.
 
-  let global_dir 0;
-  let global_stdev 0;
 
   create-turtles population
     [ set color yellow - 2 + random 7  ;; random shades look nice

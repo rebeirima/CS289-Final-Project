@@ -13,56 +13,44 @@ turtles-own [
   rel                ;; Agent's reliability
   shy                ;; Agent's shyness
 
-  d_target           ;; target direction
-  c_target           ;; certainty of target direction
+  d_target           ;; target distance
+  c_target           ;; certainty of target distance
   rumors             ;; data structure with the previously heard rumors.
   ;; currently, "rumors" is a list of tuple list with the target direction and certainty
   speakers           ;; array with ID numbers for the last k agents that were spoken to. Used for ignoring recent speakers
-  speaker_idx        ;; Next available index of speaker.
 
-  is-leader?         ;; True if Agent is a leader, false otherwise.
-  new-rumor?        ;; True if recently heard rumor and not yet updated. For efficiency, to signal need to update target.
+
 
 ]
 
 to setup
   clear-all
 
-  ask patches [set pcolor white]
   ;; create a randomly varying rumor array to simulate the calculation of a new target
-;  let global_rumors ( list
-;     ;list (random-normal target-direction 90) (0.95)
-;     ;list (random-normal target-direction 90) (0.95)
-;     ;list (random-normal target-direction 90) (0.95)
-;     list (180) (1)
-;     list (0) (1)
-;     list (360) (1)
-;    )
-;  show global_rumors ;; Instead do their heading.
+  let global_rumors ( list
+     ;list (random-normal target-direction 90) (0.95)
+     ;list (random-normal target-direction 90) (0.95)
+     ;list (random-normal target-direction 90) (0.95)
+     list (180) (1)
+     list (0) (1)
+     list (360) (1)
+    )
+  show global_rumors
 
-  let global_dir 0;
-  let global_stdev 0;
 
   create-turtles population
     [ set color yellow - 2 + random 7  ;; random shades look nice
       set size 1.5  ;; easier to see
       setxy random-xcor random-ycor
 
-      set stub random-float 1;
-      set rel  random-float 1;
-      set shy  random-float 1;
+      set stub 0;
+      set rel 1;
+      set shy 0;
 
       set flockmates no-turtles
-      set speakers [0 0 0 0 0]
-      set speaker_idx 0
-      set rumors [] ;; Initally empty.
-      set c_target 0 ; Default values
-      set d_target 0
-
-      set is-leader? false
+      ;set d_target target-direction
+      set rumors global_rumors
     ]
-
-  choose-leaders
   reset-ticks
 end
 
@@ -82,13 +70,6 @@ to flock  ;; turtle procedure
   find-flockmates
   ifelse any? flockmates
     [ find-nearest-neighbor
-
-      ;; Attempt communication with nearest neighbor.
-
-      ;; ## ADD BLOCK TO CHECK FOR SHYNESS
-      add-rumor
-
-      ;; Implement flocking
       ifelse distance nearest-neighbor < minimum-separation
         [ separate ]
         [ align
@@ -98,23 +79,11 @@ to flock  ;; turtle procedure
 end
 
 to find-flockmates  ;; turtle procedure
-  ;; Get rumors from flockmates? And average their rumors?
   set flockmates other turtles in-radius vision
 end
 
-
 to find-nearest-neighbor ;; turtle procedure
   set nearest-neighbor min-one-of flockmates [distance myself]
-end
-
-;; Selects one agent to be a leader
-to choose-leaders
-  ask max-n-of 1 turtles [count turtles in-radius 3] [
-    set is-leader? true
-    set d_target target-direction
-    set c_target 1
-    set color red
-  ]
 end
 
 ;;; SEPARATE
@@ -159,19 +128,22 @@ end
 
 ;;; TARGET - adjust orientation based on perceived target global direction
 
-
 to target
+  ;; update target direction and certainty following the equation
+  let sum_cds 0 ;; sum of certainties times directions
+  let sum_cs 0 ;; sum of certainties
+  let sum_cddts 0 ;; sum of certainties times direction differences
+  ;; calculate average direction
+  foreach rumors [ tuple ->
+    set sum_cds (sum_cds + ((item 0 tuple) * (item 1 tuple))) ;; sum(di*ci)
+    set sum_cs (sum_cs + (item 1 tuple)) ;; sum(ci)
+  ]
+  set d_target (sum_cds / sum_cs)
+  ;; calculate new target certainty
+  set c_target calc-cert
+
   ;; slightly turn towards the desired target direction
   turn-towards d_target certainty-turn
-end
-
-to update-target
-    ;; If rumors has any value and is not a leader, update target
-    if (not empty? rumors) and (not is-leader?) [
-    set d_target calc-d-target
-    ;; calculate new target certainty
-    set c_target calc-cert
-  ]
 end
 
 ;; define maximum target direction turn based on the certainty it has on that direction
@@ -186,49 +158,6 @@ to color-direction
   set color c_new
 end
 
-;; COMMUNICATE - exchange information with neighbors about the target direction
-
-to add-rumor
-  ;; Add rumor to current agents rumor array.
-  ; ## These are only local - will have to use some "ask nearest-neighbor [...]" or other approach to update neighbor values
-  let nearest-neigh-dir         [d_target] of nearest-neighbor
-  let nearest-neigh-cert        [c_target] of nearest-neighbor
-  let nearest-neigh-rumors      [rumors] of nearest-neighbor
-  let nearest-neigh-speaker-idx [speaker_idx] of nearest-neighbor
-  let nearest-neigh-speakers    [speakers] of nearest-neighbor
-
-  let nn-leader? [is-leader?] of nearest-neighbor
-
-  ;; If haven't spoken to this neighbor recently, exchange rumors
-  if not member? ([who] of nearest-neighbor) speakers [
-
-    ;; Listen to neighbor if I'm not leader and they have a non-zero certainty
-    if (not [is-leader?] of self) and (([c_target] of nearest-neighbor) > 0) [
-      ;; Add rumor to current agents rumor array.
-      set rumors lput (list nearest-neigh-dir nearest-neigh-cert) rumors
-      ;; Add neighbor to speaker list.
-      set speakers replace-item (speaker_idx mod 5) speakers ([who] of nearest-neighbor)
-      set speaker_idx (speaker_idx + 1)
-    ]
-
-    ;; Give neighbor info if they are not a leader and I have non-zero certainty
-    if (not [is-leader?] of nearest-neighbor) and (c_target > 0) [
-      set nearest-neigh-rumors lput (list d_target c_target) nearest-neigh-rumors
-      set nearest-neigh-speakers replace-item (nearest-neigh-speaker-idx mod 5) nearest-neigh-speakers ([who] of self)
-      set nearest-neigh-speaker-idx (nearest-neigh-speaker-idx + 1)
-      set nn-leader? true
-    ]
-
-
-    ;; Once communicated, update own and neighbor's target state
-    update-target
-    ask nearest-neighbor [update-target]
-    show ([who] of nearest-neighbor)
-    show nearest-neigh-speakers
-    ask nearest-neighbor [show speakers]
-
-  ]
-end
 
 
 ;; Helper procedures - S. Gollob
@@ -246,20 +175,6 @@ end
 ;     goal certainty ci' = (ci + 1)/2, essentially a "nudge" to increase certainty. The goal certainties
 ;     associated with lower-varience rumors were weighed more heavily.
 ;     This is an average nudge to increase certainty, which is regulated by the scaling factor (1).
-
-to-report calc-d-target
-  ;; Certainty-weighted average of target directions
-  let sum_cds 0 ;; sum of certainties times directions
-  let sum_cs 0 ;; sum of certainties
-  ;; calculate average direction''
-  foreach rumors [ tuple ->
-    set sum_cds (sum_cds + ((item 0 tuple) * (item 1 tuple))) ;; sum(di*ci)
-    set sum_cs (sum_cs + (item 1 tuple)) ;; sum(ci)
-  ]
-
-  report (sum_cds / sum_cs)
-end
-
 to-report calc-cert
   report (var-cert * c-cert)
 end
@@ -401,7 +316,7 @@ population
 population
 1.0
 1000.0
-15.0
+491.0
 1.0
 1
 NIL
@@ -522,24 +437,6 @@ global-certainty
 1
 NIL
 HORIZONTAL
-
-PLOT
-826
-125
-1026
-275
-plot 1
-ticks
-heading
-0.0
-10000.0
-0.0
-10.0
-true
-false
-"" "plot heading turtles"
-PENS
-"default" 1.0 0 -16777216 true "" "plot heading turtles"
 
 @#$#@#$#@
 ## WHAT IS IT?

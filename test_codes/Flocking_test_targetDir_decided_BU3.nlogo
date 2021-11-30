@@ -286,10 +286,10 @@ to turn-at-most [turn max-turn]  ;; turtle procedure
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-0
-0
-505
-506
+265
+10
+770
+516
 -1
 -1
 7.0
@@ -306,8 +306,6 @@ GRAPHICS-WINDOW
 35
 -35
 35
-0
-0
 1
 1
 1
@@ -473,7 +471,7 @@ global-certainty
 global-certainty
 0
 1
-0.05
+0.6
 0.05
 1
 NIL
@@ -866,7 +864,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 3D 6.2.1
+NetLogo 6.2.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
