@@ -54,8 +54,8 @@ to setup
 
       set flockmates no-turtles
       set speakers [0 0 0 0 0]
-      set speaker_idx 0
       set rumors [] ;; Initally empty.
+      set speaker_idx 0
       set c_target 0 ; Default values
       set d_target 0
 
@@ -202,11 +202,17 @@ to add-rumor
   ; ## These are only local - will have to use some "ask nearest-neighbor [...]" or other approach to update neighbor values
   let nearest-neigh-dir         [d_target] of nearest-neighbor
   let nearest-neigh-cert        [c_target] of nearest-neighbor
-  let nearest-neigh-rumors      [rumors] of nearest-neighbor
-  let nearest-neigh-speaker-idx [speaker_idx] of nearest-neighbor
-  let nearest-neigh-speakers    [speakers] of nearest-neighbor
+;  let nearest-neigh-rumors      [rumors] of nearest-neighbor
+;  let nearest-neigh-speaker-idx [speaker_idx] of nearest-neighbor
+;  let nearest-neigh-speakers    [speakers] of nearest-neighbor
+;  let nn-leader? [is-leader?] of nearest-neighbor
 
-  let nn-leader? [is-leader?] of nearest-neighbor
+  let my-dir d_target
+  let my-cert c_target
+  let my-id ([who] of self)
+
+
+
 
   ;; If haven't spoken to this neighbor recently, exchange rumors
   if not member? ([who] of nearest-neighbor) speakers [
@@ -214,7 +220,8 @@ to add-rumor
     ;; Listen to neighbor if I'm not leader and they have a non-zero certainty
     if (not [is-leader?] of self) and (([c_target] of nearest-neighbor) > 0) [
       ;; Add rumor to current agents rumor array.
-      set rumors lput (list nearest-neigh-dir nearest-neigh-cert) rumors
+;      set rumors replace-item (speaker_idx mod 5) rumors (list nearest-neigh-dir nearest-neigh-cert)
+      insert-rumor nearest-neigh-dir nearest-neigh-cert
       ;; Add neighbor to speaker list.
       set speakers replace-item (speaker_idx mod 5) speakers ([who] of nearest-neighbor)
       set speaker_idx (speaker_idx + 1)
@@ -222,19 +229,18 @@ to add-rumor
 
     ;; Give neighbor info if they are not a leader and I have non-zero certainty
     if (not [is-leader?] of nearest-neighbor) and (c_target > 0) [
-      set nearest-neigh-rumors lput (list d_target c_target) nearest-neigh-rumors
-      set nearest-neigh-speakers replace-item (nearest-neigh-speaker-idx mod 5) nearest-neigh-speakers ([who] of self)
-      set nearest-neigh-speaker-idx (nearest-neigh-speaker-idx + 1)
-      set nn-leader? true
+;      ask nearest-neighbor [set rumors replace-item (speaker_idx mod 5) rumors (list my-dir my-cert)]
+      ask nearest-neighbor [insert-rumor my-dir my-cert]
+      ask nearest-neighbor [set speakers replace-item (speaker_idx mod 5) speakers (my-id)]
+      ask nearest-neighbor [set speaker_idx (speaker_idx + 1)]
     ]
 
 
     ;; Once communicated, update own and neighbor's target state
     update-target
     ask nearest-neighbor [update-target]
-    show ([who] of nearest-neighbor)
-    show nearest-neigh-speakers
-    ask nearest-neighbor [show speakers]
+;    show ([who] of nearest-neighbor)
+;    ask nearest-neighbor [show rumors]
 
   ]
 end
@@ -278,6 +284,16 @@ end
 ;     goal certainty ci' = (ci + 1)/2, essentially a "nudge" to increase certainty. The goal certainties
 ;     associated with lower-varience rumors were weighed more heavily.
 ;     This is an average nudge to increase certainty, which is regulated by the scaling factor (1).
+
+to insert-rumor [dir cert]
+  ifelse (length rumors) < mem-length [
+    set rumors lput (list dir cert) rumors
+  ]
+  [
+    set rumors lput (list dir cert) rumors
+    set rumors remove-item 0 rumors
+  ]
+end
 
 to-report calc-d-target
   ;; Certainty-weighted average of target directions
@@ -433,7 +449,7 @@ population
 population
 1.0
 1000.0
-15.0
+390.0
 1.0
 1
 NIL
@@ -549,7 +565,7 @@ global-certainty
 global-certainty
 0
 1
-0.05
+0.15
 0.05
 1
 NIL
@@ -572,6 +588,17 @@ false
 "" "plot heading turtles"
 PENS
 "default" 1.0 0 -16777216 true "" "plot heading turtles"
+
+INPUTBOX
+49
+472
+179
+532
+mem-length
+5.0
+1
+0
+Number
 
 @#$#@#$#@
 ## WHAT IS IT?
