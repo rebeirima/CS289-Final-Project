@@ -303,9 +303,9 @@ to-report shyness_talk
   ;; 1 shyness corresponds to talking to no one
   ;; 0 shyness corresponds to talking to everyone, everytime
   ;; returns a bool to see if agent will talk to neighbor
-  let shy_prob random-float (1 - shy)
-  if shy_prob > .5 [ report true ]
-  if shy_prob <= .5 [ report false ]
+  let shy_prob random-float shy
+  if (1 - shy_prob) > .5 [ report true ]
+  if (1 - shy_prob) <= .5 [ report false ]
 end
 
 
