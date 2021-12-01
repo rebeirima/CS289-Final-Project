@@ -48,9 +48,10 @@ to setup
       set size 1.5  ;; easier to see
       setxy random-xcor random-ycor
 
-      set stub random-float 1;
-      set rel  random-float 1;
+      ;;set stub random-float 1;
+      ;; set rel  random-float 1;
       set shy  random-float 1;
+
 
       set flockmates no-turtles
       set speakers [0 0 0 0 0]
@@ -89,7 +90,7 @@ to flock  ;; turtle procedure
       ;; Attempt communication with nearest neighbor.
 
       ;; ## ADD BLOCK TO CHECK FOR SHYNESS
-      if shyness_talk [
+      if not shyness_talk [
          add-rumor
       ]
 
@@ -216,11 +217,9 @@ to add-rumor
 
     ;; Listen to neighbor if I'm not leader and they have a non-zero certainty
     if (not [is-leader?] of self) and (([c_target] of nearest-neighbor) > 0) [
-      ;; Add rumor to current agents rumor array.
-      ;  set rumors replace-item (speaker_idx mod 5) rumors (list nearest-neigh-dir nearest-neigh-cert)
-      let reliability 0
-      ask nearest-neighbor [set reliability reliability_error]
-      insert-rumor (nearest-neigh-dir * reliability) nearest-neigh-cert
+      let nearest-neigh-rel 0
+      ask nearest-neighbor [set nearest-neigh-rel reliability_error]
+      insert-rumor (nearest-neigh-dir + nearest-neigh-rel) nearest-neigh-cert
       ;; Add neighbor to speaker list.
       set speakers replace-item (speaker_idx mod 5) speakers ([who] of nearest-neighbor)
       set speaker_idx (speaker_idx + 1)
@@ -228,7 +227,7 @@ to add-rumor
 
     ;; Give neighbor info if they are not a leader and I have non-zero certainty
     if (not [is-leader?] of nearest-neighbor) and (c_target > 0) [
-      ask nearest-neighbor [insert-rumor (my-dir * reliability_error) my-cert]
+      ask nearest-neighbor [insert-rumor (my-dir + reliability_error) my-cert]
       ask nearest-neighbor [set speakers replace-item (speaker_idx mod 5) speakers (my-id)]
       ask nearest-neighbor [set speaker_idx (speaker_idx + 1)]
     ]
@@ -461,7 +460,7 @@ max-align-turn
 max-align-turn
 0.0
 20.0
-4.25
+9.5
 0.25
 1
 degrees
@@ -568,24 +567,6 @@ global-certainty
 NIL
 HORIZONTAL
 
-PLOT
-826
-125
-1026
-275
-plot 1
-ticks
-heading
-0.0
-10000.0
-0.0
-10.0
-true
-false
-"" "plot heading turtles"
-PENS
-"default" 1.0 0 -16777216 true "" "plot heading turtles"
-
 INPUTBOX
 49
 472
@@ -596,6 +577,24 @@ mem-length
 1
 0
 Number
+
+PLOT
+470
+159
+670
+309
+Agent Convergence
+Ticks
+Std Dev
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot standard-deviation [heading] of turtles"
 
 @#$#@#$#@
 ## WHAT IS IT?
