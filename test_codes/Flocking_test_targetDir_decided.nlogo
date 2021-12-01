@@ -90,7 +90,7 @@ to flock  ;; turtle procedure
       ;; Attempt communication with nearest neighbor.
 
       ;; ## ADD BLOCK TO CHECK FOR SHYNESS
-      if not shyness_talk [
+      if shyness_talk [
          add-rumor
       ]
 
@@ -248,10 +248,7 @@ to-report reliability_error
   ;;returns error_degree, the degree of error to be added to the communicated target_direction
   let error_range (180 * (1 - rel))
   let error_degree random error_range ;;error degree is the a
-  let pos_neg random 2
-  if pos_neg > 0.9 [ report int ( -1 * error_degree ) ]
-  if pos_neg < 1 [ report int error_degree ]
-  report int error_degree
+  report int error_degree ;;STILL DO: need to make sure error_degree + direction is [0,360] degrees when using function
 end
 
 
@@ -397,6 +394,8 @@ GRAPHICS-WINDOW
 35
 -35
 35
+0
+0
 1
 1
 1
@@ -984,7 +983,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.2.1
+NetLogo 3D 6.2.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@

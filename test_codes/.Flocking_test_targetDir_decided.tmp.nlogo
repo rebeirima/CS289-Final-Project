@@ -48,8 +48,8 @@ to setup
       set size 1.5  ;; easier to see
       setxy random-xcor random-ycor
 
-      ;;set stub random-float 1;
-      ;; set rel  random-float 1;
+      set stub random-float 1;
+      set rel  random-float 0.5;
       set shy  random-float 1;
 
 
@@ -90,7 +90,7 @@ to flock  ;; turtle procedure
       ;; Attempt communication with nearest neighbor.
 
       ;; ## ADD BLOCK TO CHECK FOR SHYNESS
-      if not shyness_talk [
+      if notshyness_talk [
          add-rumor
       ]
 
