@@ -577,9 +577,9 @@ Number
 
 PLOT
 752
-10
+251
 1028
-269
+510
 Agent Convergence
 Ticks
 Std Dev
@@ -594,10 +594,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot standard-deviation ([heading] of turtles)"
 
 PLOT
-784
-324
-984
-474
+751
+10
+1028
+247
 Rumor Spread
 Ticks
 Unreached Agents
@@ -610,6 +610,17 @@ false
 "" ""
 PENS
 "default" 1.0 0 -16777216 true "" "plot count turtles with [c_target = 0]"
+
+MONITOR
+1033
+69
+1119
+114
+Rumor spead
+if true [ticks]
+17
+1
+11
 
 @#$#@#$#@
 ## WHAT IS IT?
