@@ -4,8 +4,6 @@
 
 extensions [array]
 
-globals [last_rumor_tick]
-
 turtles-own [
   flockmates         ;; agentset of nearby turtles
   nearest-neighbor   ;; closest one of our flockmates
@@ -348,18 +346,6 @@ to-report c-cert
 
 end
 
-to-report last-rumor
-  if (count turtles with [c_target = 0]) > 0 [
-    set last_rumor_tick ticks
-  ]
-  report last_rumor_tick
-end
-
-to-report target-error
-  let curr_dir (mean [heading] of turtles)
-  report abs(target-direction - curr_dir)
-end
-
 ;;; HELPER PROCEDURES - U. Wilenski (1998)
 
 to turn-towards [new-heading max-turn]  ;; turtle procedure
@@ -624,28 +610,6 @@ false
 "" ""
 PENS
 "default" 1.0 0 -16777216 true "" "plot count turtles with [c_target = 0]"
-
-MONITOR
-886
-34
-1014
-79
-Rumor Spread Count
-last-rumor
-17
-1
-11
-
-MONITOR
-936
-275
-1017
-320
-Target Error
-target-error
-5
-1
-11
 
 @#$#@#$#@
 ## WHAT IS IT?

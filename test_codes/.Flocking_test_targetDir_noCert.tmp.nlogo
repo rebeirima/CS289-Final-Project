@@ -4,6 +4,8 @@
 
 extensions [array]
 
+globals [last_rumor_tick]
+
 turtles-own [
   flockmates         ;; agentset of nearby turtles
   nearest-neighbor   ;; closest one of our flockmates
@@ -290,60 +292,30 @@ end
 
 to-report calc-d-target
   ;; Certainty-weighted average of target directions
-  let sum_cds 0 ;; sum of certainties times directions
-  let sum_cs 0 ;; sum of certainties
+  let sum_ds 0 ;; sum of directions
+  let len (length rumors)
   ;; calculate average direction''
   foreach rumors [ tuple ->
-    set sum_cds (sum_cds + ((item 0 tuple) * (item 1 tuple))) ;; sum(di*ci)
-    set sum_cs (sum_cs + (item 1 tuple)) ;; sum(ci)
+    set sum_ds (sum_ds + (item 0 tuple) ) ;; sum(di)
   ]
 
-  report (sum_cds / sum_cs)
+  report (sum_ds / len)
 end
 
 to-report calc-cert
-  report (var-cert * c-cert)
+  report 1
 end
 
-;Varience-quantified certainty component (0,1) - low if high varience in rumors
-;Implemented like a certainty-weighted average of the variances, where the difference between a direction
-; and the target is a value from 1-0, where 1 means no difference and 0 means 180 deg difference. This
-; value is calculated with a cosine: (1/2 + cos(dt-di)/2 )
-to-report var-cert
-  let sum_num 0 ;; sum for numerator
-  let sum_den 0 ;; sum for denominator
-
-  ;; sum( ci 1/2(1+cos(dt-di)) ) / sum (ci)
-  foreach rumors [ tuple ->
-    let di (item 0 tuple)
-    let ci (item 1 tuple)
-    set sum_num (sum_num + (ci * 0.5 * (1 + cos(d_target - di)) ) )
-    set sum_den (sum_den + ci)
+to-report last-rumor
+  if (count turtles with [c_target = 0]) > 0 [
+    set last_rumor_tick ticks
   ]
-  report (sum_num / sum_den)
+  report last_rumor_tick
 end
 
-; Certainty-quantified certainty component (0,1) - like a variance-weighted average of the certainties
-; from "rumors", with the special property that the certainty values being averaged are slightly larger
-; than their current values. The certainties associated with the values closer to the average are dominant
-; This allows the certainty to increase if there is an agreement, while also discouraging elements that are
-; far from the target direction from having a dominant say in the certainty.
-; BECAUSE CERTAINTY IS ALWAYS INCREMENTED, THIS VALUE WILL INCREASE REGARDLESS OF HOW
-; MUCH VARIANCE THERE IS. THE POINT IS THE THE "VAR-CERT" COMPONENT SHOULD SHINK IT BACK DOWN.
-to-report c-cert
-  let sum_num 0 ;; sum for numerator
-  let sum_den 0 ;; sum for denominator
-
-  ;; sum( (ci+1)/2 * 1/|dt-di| ) / sum (1/|dt-di|)
-  foreach rumors [tuple ->
-    let di (item 0 tuple)
-    let ci (item 1 tuple)
-    set sum_num ( sum_num + (0.5 * (ci + 1) / (abs(d_target - di) + 1) ) )
-    set sum_den ( sum_den + (1 / (abs(d_target - di) + 1)) )
-  ]
-
-  report (sum_num / sum_den)
-
+to-report target-error
+  let curr_dir (mean [heading] of turtles)
+  report abs(target-direction - curr_dir)
 end
 
 ;;; HELPER PROCEDURES - U. Wilenski (1998)
@@ -612,13 +584,24 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot count turtles with [c_target = 0]"
 
 MONITOR
-1033
-69
-1119
-114
-Rumor spead
-if true [ticks]
+929
+36
+1057
+81
+Rumor Spread Count
+last-rumor
 17
+1
+11
+
+MONITOR
+936
+275
+1017
+320
+Target Error
+target-error
+5
 1
 11
 
