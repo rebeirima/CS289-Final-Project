@@ -48,9 +48,9 @@ to setup
       set size 1.5  ;; easier to see
       setxy random-xcor random-ycor
 
-      set stub random-float 1;
-      set rel  random-float 1;
-      set shy  random-float 1;
+      set stub 0.5;
+      set rel  1;
+      set shy  0.85;
 
 
       set flockmates no-turtles
@@ -119,7 +119,8 @@ to choose-leaders
     set is-leader? true
     set d_target target-direction
     set c_target 1
-    set color red
+    set shape "arrow"
+    set size 2.5
   ]
 end
 
@@ -202,10 +203,6 @@ to add-rumor
   ;; Add rumor to current agents rumor array.
   let nearest-neigh-dir         [d_target] of nearest-neighbor
   let nearest-neigh-cert        [c_target] of nearest-neighbor
-;  let nearest-neigh-rumors      [rumors] of nearest-neighbor
-;  let nearest-neigh-speaker-idx [speaker_idx] of nearest-neighbor
-;  let nearest-neigh-speakers    [speakers] of nearest-neighbor
-;  let nn-leader? [is-leader?] of nearest-neighbor
 
   let my-dir d_target
   let my-cert c_target
@@ -217,9 +214,9 @@ to add-rumor
 
     ;; Listen to neighbor if I'm not leader and they have a non-zero certainty
     if (not [is-leader?] of self) and (([c_target] of nearest-neighbor) > 0) [
-      let nearest-neigh-rel 0
-      ask nearest-neighbor [set nearest-neigh-rel reliability_error]
-      insert-rumor (nearest-neigh-dir + nearest-neigh-rel) nearest-neigh-cert
+      let nearest-neigh-err 0
+      ask nearest-neighbor [set nearest-neigh-err reliability_error]
+      insert-rumor (nearest-neigh-dir + nearest-neigh-err) nearest-neigh-cert
       ;; Add neighbor to speaker list.
       set speakers replace-item (speaker_idx mod 5) speakers ([who] of nearest-neighbor)
       set speaker_idx (speaker_idx + 1)
@@ -248,7 +245,9 @@ to-report reliability_error
   ;;returns error_degree, the degree of error to be added to the communicated target_direction
   let error_range (180 * (1 - rel))
   let error_degree random error_range ;;error degree is the a
-  report int error_degree ;;STILL DO: need to make sure error_degree + direction is [0,360] degrees when using function
+  let sign 0
+  ifelse (random 2) = 0 [set sign -1] [set sign 1]
+  report int (sign * error_degree) ;;STILL DO: need to make sure error_degree + direction is [0,360] degrees when using function
 end
 
 
@@ -374,10 +373,10 @@ to turn-at-most [turn max-turn]  ;; turtle procedure
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-0
-0
-505
-506
+240
+10
+745
+516
 -1
 -1
 7.0
@@ -394,8 +393,6 @@ GRAPHICS-WINDOW
 35
 -35
 35
-0
-0
 1
 1
 1
@@ -445,7 +442,7 @@ population
 population
 1.0
 1000.0
-390.0
+505.0
 1.0
 1
 NIL
@@ -460,7 +457,7 @@ max-align-turn
 max-align-turn
 0.0
 20.0
-9.5
+5.0
 0.25
 1
 degrees
@@ -475,7 +472,7 @@ max-cohere-turn
 max-cohere-turn
 0.0
 20.0
-3.0
+4.0
 0.25
 1
 degrees
@@ -505,7 +502,7 @@ vision
 vision
 0.0
 10.0
-2.5
+3.5
 0.5
 1
 patches
@@ -535,7 +532,7 @@ max-target-turn
 max-target-turn
 0
 10
-2.0
+2.5
 0.1
 1
 degrees
@@ -547,7 +544,7 @@ INPUTBOX
 190
 426
 target-direction
-0.0
+180.0
 1
 0
 Number
@@ -561,7 +558,7 @@ global-certainty
 global-certainty
 0
 1
-0.15
+0.0
 0.05
 1
 NIL
@@ -579,10 +576,10 @@ mem-length
 Number
 
 PLOT
-470
-159
-670
-309
+752
+251
+1028
+510
 Agent Convergence
 Ticks
 Std Dev
@@ -594,7 +591,25 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot standard-deviation [heading] of turtles"
+"default" 1.0 0 -16777216 true "" "plot standard-deviation ([heading] of turtles)"
+
+PLOT
+751
+10
+1028
+247
+Rumor Spread
+Ticks
+Unreached Agents
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot count turtles with [c_target = 0]"
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -983,7 +998,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 3D 6.2.1
+NetLogo 6.2.1
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
